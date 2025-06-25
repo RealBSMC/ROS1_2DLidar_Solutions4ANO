@@ -1,0 +1,13 @@
+1.建立工作空间
+mkdir -p ~/catkin_ws/src
+2.进入src
+cd ~/catkin_ws/src
+3.初始化文件夹
+ catkin_init_workspace
+4.进入工作空间
+cd ~/catkin_ws/
+5.编译工作空间
+catkin_make
+6.设置环境变量
+ echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
+7.

@@ -1,0 +1,7 @@
+<launch>
+
+    <include file="$(find anorosdt)/launch/Lidar.launch"/>
+
+    <include file="$(find anorosdt)/launch/hector_mapping/hector_mapping_imu.launch"/>
+
+</launch>

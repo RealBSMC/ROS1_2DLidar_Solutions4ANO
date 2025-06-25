@@ -1,0 +1,10 @@
+<launch>
+    <node pkg="anorosdt" type="anoros_dt" name="anoros_dt">
+        <!-- 从YAML文件加载参数 -->  
+        <rosparam file="$(find anorosdt)/config/config.yaml"/>  
+    </node>
+    <!--
+    <node pkg="tf" type="static_transform_publisher" name="gyro_link_to_base_link" args="0 0 0 0 0 0 /imu_link /base_link 100"/>
+    -->
+
+</launch>

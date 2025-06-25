@@ -1,0 +1,5 @@
+<launch>  
+    <node pkg="map_server" type="map_saver" name="map_saver1"   
+          args="-f $(find anorosdt)/map/MAP" output="screen">  
+    </node>  
+</launch>

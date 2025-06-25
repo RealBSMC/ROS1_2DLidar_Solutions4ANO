@@ -1,0 +1,28 @@
+# config.yaml  
+#飞控串口名称，可以使用cutecom查看该串口是否工作正常
+SerialName_FC: "/dev/ttyS9"
+#飞控串口波特率，匿名飞控默认500000
+SerialBaud_FC: 921600
+
+#话题发布名称修改
+PubTopicName_Imu:       ano_imu
+PubTopicName_Mag:       ano_mag
+PubTopicName_Tmp:       ano_tmp
+PubTopicName_Alt:       ano_alt
+PubTopicName_Gps:       ano_gps
+PubTopicName_OF:        ano_of
+PubTopicName_RC:        fs_rc
+PubTopicName_UserData:  UserData
+
+
+#坐标系名称修改
+PubFrameidName_Imu:     imu_link
+PubFrameidName_Mag:     mag_link
+PubFrameidName_Tmp:     tmp_link
+PubFrameidName_Alt:     alt_link
+PubFrameidName_Gps:     gps_link
+PubFrameidName_OF:      of_link
+PubFrameidName_RC:      rc_link
+
+
+

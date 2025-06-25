@@ -1,0 +1,139 @@
+<launch>
+    <!--选择雷达名称，调用对应雷达SDK，这些目前为每一个SKD驱动包默认启动雷达，需要修改则需要在对应雷达SDK中修改-->
+    <arg name="lidar_name" default="LSN10P" doc="opt: LD06 LSN10P LSN10 MS200 unilidar MID360 LD04"/>
+    
+    <!--RadarUSB_Name 
+        确定接口名称：
+            打开命令框，输入 la -la /dev/ 进行查看
+        修改权限：
+            1. cd /etc/udev/rules.d/
+            2. sudo gedit tty_all.rules
+            3. 输入 KERNEL==ttyUSB*, MODE:=0777, GROUP:=dialout
+    -->
+    <arg name="RadarUSB_Name" default="/dev/ttyUSB0"/>
+
+    <!--RadarUSB_Baud 参数修改参考
+        LD04 波特率115200
+        LD06 波特率230400
+        LSN10 波特率230400
+        LSN10P 波特率代码内部确定
+        MS200 波特率230400
+        unilidar/MID360 对应的驱动文件进行修改
+    -->
+    <arg name="RadarUSB_Baud" default="230400"/>
+
+    <!--启动乐动LD06雷达-->
+    <group if="$(eval lidar_name == 'LD06')">
+        <arg name="topic_name" default="scan"/>
+        <arg name="frame_id" default="laser_frame"/>
+        <arg name="port_name" default="/dev/ttyUSB0"/>
+        <arg name="port_baudrate" default="230400"/>
+        <arg name="fix_to_base_link" default="true"/>
+
+        <node name="LD06" pkg="ldlidar_stl_ros" type="ldlidar_stl_ros_node" output="screen" >
+            <param name="product_name" value="LDLiDAR_LD06"/>
+            <param name="topic_name" value="$(arg topic_name)"/>
+            <param name="frame_id" value="$(arg frame_id)"/>
+            <param name="port_name" value ="$(arg RadarUSB_Name)"/>
+            <param name="port_baudrate" value ="$(arg RadarUSB_Baud)"/>
+            <param name="laser_scan_dir" type="bool" value="true"/>
+            <param name="enable_angle_crop_func" type="bool" value="false"/>
+            <param name="angle_crop_min" type="double" value="135.0"/>
+            <param name="angle_crop_max" type="double" value="225.0"/>
+        </node> 
+    </group>
+
+    <!--启动镭神N10P雷达-->
+    <group if="$(eval lidar_name == 'LSN10P')">
+        <node pkg="lslidar_driver" type="lslidar_driver_node" name="lslidar_driver_node" output="screen">
+            <param name="lidar_name" value="N10_P"/>                                       <!--雷达选择:M10 M10_P M10_PLUS M10_GPS N10 L10 N10_P-->
+            <param name="serial_port" value="/dev/ttyACM0"/>                       <!--雷达连接的串口-->
+            <param name="interface_selection" value="serial"/>                             <!--接口选择:net为网口,serial为串口-->
+            <param name="frame_id" value="laser_frame"/>                                   <!--激光坐标-->
+            <param name="scan_topic" value="scan"/>                                        <!--设置激光数据topic名称-->
+            <param name="min_range" value="0.15"/>                                         <!--雷达接收距离最小值-->
+            <param name="max_range" value="100.0"/>                                        <!--雷达接收距离最大值-->
+            <param name="use_gps_ts" value="false"/>                                       <!--雷达是否使用GPS授时-->
+            <param name="compensation" value="false"/>                                     <!--雷达是否使用角度补偿功能-->
+            <param name="pubScan" value="true"/>                                           <!--雷达是否发布scan话题-->
+            <param name="pubPointCloud2" value="false"/>                                   <!--雷达是否发布pointcloud2话题-->
+            <param name="high_reflection" value="false"/>                                  <!--M10_P雷达需填写该值,若不确定，请联系技术支持-->
+            <!--param name="in_file_name" value="$(find lslidar_driver)/pcap/1.txt"/-->    <!--驱动是否使用txt文件读取功能-->
+        </node>
+            <!-- 镭神雷达参数 -->
+            <!-- <param name="lslidar_driver_node/truncated_mode" value="0"/> -->          <!--0:不屏蔽角度 1:屏蔽角度-->
+            <!-- <rosparam param="lslidar_driver_node/disable_min">[120]</rosparam> -->    <!--角度左值-->
+            <!-- <rosparam param="lslidar_driver_node/disable_max">[240]</rosparam>  -->   <!--角度右值-->
+            <!-- 镭神雷达参数 -->
+    </group>
+
+
+    <!--启动镭神N10雷达-->
+    <group if="$(eval lidar_name == 'LSN10')">
+        <node name="lsn10" pkg="lsn10" type="lsn10" output="screen" >
+            <param name="scan_topic" value="scan"/>                         <!--设置激光数据topic名称-->
+            <param name="frame_id" value="laser_frame"/>                    <!--激光坐标-->
+            <param name="serial_port" value="$(arg RadarUSB_Name)"/>        <!--雷达连接的串口-->
+            <param name="baud_rate" value="$(arg RadarUSB_Baud)" />         <!--雷达连接的串口波特率-->
+            <param name="min_distance" value="0.0"/>                        <!--最小扫描距离-->
+            <param name="max_distance" value="30.0"/>                       <!--最大扫描距离-->
+
+            <!-- 镭神雷达参数 -->
+            <param name="truncated_mode" value="0"/>                        <!--0:不使用过滤 1:使用过滤-->
+            <rosparam param="disable_min">[0,90,180,270]</rosparam>         <!--需要过滤(屏蔽)的角度初始值，允许多角度过滤-->
+            <rosparam param="disable_max">[45,135,225,315]</rosparam>       <!--需要过滤(屏蔽)的角度结束值，允许多角度过滤-->
+            <!-- 镭神雷达参数 -->
+        </node>
+    </group>
+
+    <!--启动奥锐达MS200雷达-->
+    <group if="$(eval lidar_name == 'MS200')">
+        <node pkg="oradar_lidar" type="oradar_scan" name="oradar_scan" output="screen">
+
+            <param name="device_model" type="string"   value="MS200"/>                   <!--设备型号: MS200-->
+            <param name="frame_id"     type="string"   value="laser_frame"/>             <!--配置frame_id-->
+            <param name="scan_topic"   type="string"   value="scan" />                   <!--设置激光雷达的topic名称--> 
+            <param name="port_name"    type="string"   value="$(arg RadarUSB_Name)"/>    <!--配置串口设备port: dev/ttyUSB0-->
+            <param name="baudrate"     type="int"      value="$(arg RadarUSB_Baud)"/>    <!--配置串口波特率:230400-->
+            <param name="angle_min"    type="double"   value="0.00" />                   <!--设置最小角度，单位度.取值范围[0,360].default=0.0-->
+            <param name="angle_max"    type="double"   value="360.00"/>                  <!--设置最大角度，单位度.取值范围[0,360].default=360.0-->
+            <param name="range_min"    type="double"   value="0.05" />                   <!--设置最小距离，单位米，default=0.05-->
+            <param name="range_max"    type="double"   value="12.0" />                   <!--设置最大距离，单位米，default=20.0-->
+            <param name="clockwise"    type="bool"     value="true"/>                    <!--配置点云方向，true为顺时针， false为逆时针-->
+            <param name="motor_speed"  type="int"      value="12" />                     <!--配置motor转速.default=10Hz, 取值范围5~15Hz-->
+        </node>
+    </group>
+
+    <!--启动宇树L1 LiDAR雷达-->
+    <group if="$(eval lidar_name == 'unilidar')">
+        <include file="$(find unitree_lidar_ros)/launch/run.launch"/>
+    </group>
+    
+    <!--启动宇树MID360雷达-->
+    <group if="$(eval lidar_name == 'MID360')">
+        <include file="$(find livox_ros_driver2)/launch/msg_MID360.launch"/>
+    </group>
+    
+    <group if="$(eval lidar_name == 'LD04')">
+        <arg name="laser_scan_topic_name" default="scan"/>
+        <arg name="point_cloud_2d_topic_name" default="pointcloud2d"/>
+        <arg name="frame_id" default="laser_frame"/>
+        <arg name="port_name" default="/dev/ttyS4"/>
+        <arg name="fix_to_base_link" default="true" />
+
+        <!-- LDROBOT LiDAR message publisher node -->
+        <node name="ldlidar_publisher_ld14" pkg="ldlidar_sl_ros" type="ldlidar_sl_ros_node" output="screen">
+            <param name="product_name" value="LDLiDAR_LD14"/>
+            <param name="laser_scan_topic_name" value="$(arg laser_scan_topic_name)"/>
+            <param name="point_cloud_2d_topic_name" value="$(arg point_cloud_2d_topic_name)"/>
+            <param name="frame_id" value="$(arg frame_id)"/>
+            <param name="port_name" value="$(arg RadarUSB_Name)"/>
+            <param name="serial_baudrate" value="$(arg RadarUSB_Baud)"/>
+            <param name="laser_scan_dir" type="bool" value="true"/>
+            <param name="enable_angle_crop_func" type="bool" value="false"/>
+            <param name="angle_crop_min" type="double" value="135.0"/>
+            <param name="angle_crop_max" type="double" value="225.0"/>
+        </node>
+    </group>
+
+</launch>
